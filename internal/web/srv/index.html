@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>... // YouTube Playlist</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="bg-gray-100 mx-auto max-w-screen-lg container-fluid">
+    <nav class="flex justify-between items-center py-2 gap-2">
+        <h1 id="title" class="text-2xl font-bold p-2 flex-1">... // YouTube Playlist</h1>
+        <a href="#" target="_blank" id="view-on-youtube"
+            class="hidden bg-[#ff0034] text-white text-center px-4 py-2 rounded-md font-bold cursor-pointer">View on YouTube</a>
+    </nav>
+    <div id="playlist" class="grid grid-cols-3 gap-4"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const playlist_id = urlParams.get('list');
+        const playlist = document.getElementById('playlist');
+        const title = document.getElementById('title');
+        const viewOnYoutube = document.getElementById('view-on-youtube');
+        let videos = [];
+        let name = '';
+
+        if (playlist_id) {
+            fetch(`/api/youtube/playlist?playlist_id=${playlist_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    videos = data.videos;
+                    name = data.name;
+                    title.innerHTML = `${name} // YouTube Playlist`;
+                    document.title = `${name} // YouTube Playlist`;
+                    viewOnYoutube.href = `https://www.youtube.com/playlist?list=${playlist_id}`;
+                    viewOnYoutube.classList.remove('hidden');
+                    renderPlaylist();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function renderPlaylist() {
+            playlist.innerHTML = '';
+            videos.forEach(video => {
+                const videoElement = document.createElement('div');
+                videoElement.innerHTML = `
+                        <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-auto"> 
+                        <h2 class="text-lg font-bold">${video.title}</h2>
+                        <p class="text-sm text-gray-500 line-clamp-4">${video.video_owner_channel_title}</p>
+                        <a href="${video.url}" target="_blank" class="bg-[#ff0034] text-white text-center px-4 py-2 rounded-md font-bold cursor-pointer">Play</a>
+                    `;
+                videoElement.classList.add('bg-gray-100', 'p-2', 'rounded-md', 'flex', 'flex-col', 'gap-2', 'justify-between');
+                playlist.appendChild(videoElement);
+            });
+        }
+    </script>
+</body>
+
+</html>

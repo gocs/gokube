@@ -1,5 +1,12 @@
+include .env
+export
+
 CONFIG_DIR := config
 GEN_DIR := gen
+
+.PHONY: run
+run:
+	go run cmd/main.go
 
 .PHONY: gencert
 gencert:

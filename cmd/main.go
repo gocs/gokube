@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gocs/gokube/internal/web"
+	"github.com/gocs/gokube/internal/youtube"
 )
 
 func main() {
@@ -16,7 +19,15 @@ func main() {
 	webserver, shutdown := web.NewServer(ctx, ":8080")
 	defer shutdown()
 
-	go webserver()
+	youtube, err := youtube.NewYoutubeCtrl(ctx)
+	if err != nil {
+		log.Fatalf("Error creating YouTube controller: %v", err)
+	}
+
+	go webserver(map[string]http.HandlerFunc{
+		"GET /":                     web.Frontend,
+		"GET /api/youtube/playlist": youtube.Playlist,
+	})
 
 	<-ctx.Done()
 }
