@@ -1,0 +1,102 @@
+# Gokube Helm Chart Values
+# 
+# ACCESS METHODS:
+# 1. Ingress (default): http://gokube.local (requires ingress controller)
+# 2. NodePort: Change service.type to "NodePort" and access via node IP:30080
+# 3. Port Forward: kubectl port-forward svc/gokube 8080:8080
+# 4. LoadBalancer: Change service.type to "LoadBalancer" (cloud providers only)
+#
+# TROUBLESHOOTING:
+# - Ensure you have an ingress controller installed (nginx, traefik, etc.)
+# - Add gokube.local to your /etc/hosts file: 127.0.0.1 gokube.local
+# - Check pod logs: kubectl logs -l app.kubernetes.io/name=gokube
+# - Check service: kubectl get svc -l app.kubernetes.io/name=gokube
+# - Check ingress: kubectl get ingress -l app.kubernetes.io/name=gokube
+
+replicaCount: 1
+
+youtube:
+  apiKey: ""
+
+image:
+  repository: gocs/gokube
+  pullPolicy: IfNotPresent
+  tag: "0.0.0"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  runAsNonRoot: true
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  limits:
+    cpu: 150m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

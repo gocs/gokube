@@ -22,3 +22,31 @@ gencert:
 .PHONY: test
 test:
 	go test -race ./...
+
+.PHONY: deploy
+deploy:
+	helm upgrade --install gokube ./charts/gokube \
+		--namespace gokube \
+		--create-namespace \
+		--values env.yaml
+
+.PHONY: undeploy
+undeploy:
+	helm uninstall gokube --namespace gokube
+
+.PHONY: delete
+delete:
+	helm uninstall gokube --namespace gokube
+	kubectl delete namespace gokube
+
+.PHONY: port-forward
+port-forward:
+	kubectl port-forward svc/gokube 8080:8080 --namespace gokube
+
+.PHONY: help
+help:
+	@echo "Usage: make <target>"
+	@echo "Targets:"
+	@echo "  run - Run the application"
+	@echo "  test - Run tests"
+	@echo "  deploy - Deploy the application"
