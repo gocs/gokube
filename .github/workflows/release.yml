@@ -62,7 +62,6 @@ jobs:
       - name: Custom Helm Package
         run: |
           VERSION=${{ github.ref_name }}
-          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
           rm -rf .cr-release-packages
           mkdir -p .cr-release-packages
           helm package --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages charts/gokube
