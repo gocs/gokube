@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   gokube:
   - apiVersion: v2
+    appVersion: 1.0.6
+    created: "2025-07-04T07:13:49.952872518Z"
+    description: Youtube Playlist Lister
+    digest: cf2edf4cf7c71f68b2e39e10ef05c66a05f1464ad0c218fc38d35c0f2a2cb8e1
+    name: gokube
+    type: application
+    urls:
+    - https://github.com/gocs/gokube/releases/download/gokube-1.0.6/gokube-1.0.6.tgz
+    version: 1.0.6
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-07-04T06:35:02.075084319Z"
     description: Youtube Playlist Lister
@@ -11,4 +21,4 @@ entries:
     urls:
     - https://github.com/gocs/gokube/releases/download/gokube-1.0.0/gokube-1.0.0.tgz
     version: 1.0.0
-generated: "2025-07-04T06:35:02.075094438Z"
+generated: "2025-07-04T07:13:49.952896483Z"
