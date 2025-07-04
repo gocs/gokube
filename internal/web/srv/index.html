@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>... // YouTube Playlist</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.6.1/build/global/luxon.min.js"></script>
 </head>
 
 <body class="bg-gray-100 mx-auto max-w-screen-lg container-fluid">
     <nav class="flex justify-between items-center py-2 gap-2">
         <h1 id="title" class="text-2xl font-bold p-2 flex-1">... // YouTube Playlist</h1>
         <a href="#" target="_blank" id="view-on-youtube"
-            class="hidden bg-[#ff0034] text-white text-center px-4 py-2 rounded-md font-bold cursor-pointer">View on YouTube</a>
+            class="hidden bg-[#ff0034] text-white text-center px-4 py-2 rounded-md font-bold cursor-pointer">View on
+            YouTube</a>
     </nav>
     <div id="playlist" class="grid grid-cols-3 gap-4"></div>
 
@@ -46,13 +48,24 @@
                 const videoElement = document.createElement('div');
                 videoElement.innerHTML = `
                         <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-auto"> 
-                        <h2 class="text-lg font-bold">${video.title}</h2>
-                        <p class="text-sm text-gray-500 line-clamp-4">${video.video_owner_channel_title}</p>
+                        <div class="flex flex-col flex-1">
+                            <h2 class="text-lg font-bold">${video.title}</h2>
+                            <p class="text-sm text-gray-500 line-clamp-4">${video.video_owner_channel_title}</p>
+                            <p class="text-sm text-gray-500">${formatViewCount(video.view_count)} views</p>
+                        </div>
                         <a href="${video.url}" target="_blank" class="bg-[#ff0034] text-white text-center px-4 py-2 rounded-md font-bold cursor-pointer">Play</a>
                     `;
                 videoElement.classList.add('bg-gray-100', 'p-2', 'rounded-md', 'flex', 'flex-col', 'gap-2', 'justify-between');
                 playlist.appendChild(videoElement);
             });
+        }
+
+        function formatViewCount(viewCount) {
+            const formatter = new Intl.NumberFormat(navigator.language, {
+                notation: 'compact',
+                maximumFractionDigits: 0
+            });
+            return formatter.format(viewCount);
         }
     </script>
 </body>

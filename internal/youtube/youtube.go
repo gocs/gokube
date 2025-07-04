@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gocs/gokube/internal/config"
 	"google.golang.org/api/option"
@@ -18,6 +19,7 @@ type Video struct {
 	VideoOwnerChannelTitle string `json:"video_owner_channel_title"`
 	Thumbnail              string `json:"thumbnail"`
 	URL                    string `json:"url"`
+	ViewCount              int64  `json:"view_count"`
 }
 
 type Playlist struct {
@@ -90,16 +92,20 @@ func (yc *YoutubeCtrl) Playlist(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Add videos from this page
+		wg := sync.WaitGroup{}
 		for _, item := range response.Items {
-			video := Video{
-				ID:                     item.Snippet.ResourceId.VideoId,
-				Title:                  item.Snippet.Title,
-				VideoOwnerChannelTitle: item.Snippet.VideoOwnerChannelTitle,
-				Thumbnail:              item.Snippet.Thumbnails.Default.Url,
-				URL:                    fmt.Sprintf("https://www.youtube.com/watch?v=%s", item.Snippet.ResourceId.VideoId),
-			}
-			allVideos = append(allVideos, video)
+			wg.Add(1)
+			go func(item *youtube.PlaylistItem) {
+				defer wg.Done()
+				video, err := yc.Video(item.Snippet.ResourceId.VideoId)
+				if err != nil {
+					log.Printf("Error getting video details: %v", err)
+					return
+				}
+				allVideos = append(allVideos, video)
+			}(item)
 		}
+		wg.Wait()
 
 		// Check if there are more pages
 		nextPageToken = response.NextPageToken
@@ -114,4 +120,31 @@ func (yc *YoutubeCtrl) Playlist(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(playlist)
+}
+
+func (yc *YoutubeCtrl) Video(videoID string) (Video, error) {
+
+	// Get video details including statistics
+	call := yc.service.Videos.List([]string{"snippet", "statistics"}).Id(videoID)
+	response, err := call.Do()
+	if err != nil {
+		log.Printf("Error getting video details: %v", err)
+		return Video{}, fmt.Errorf("error getting video details: %v", err)
+	}
+
+	if len(response.Items) == 0 {
+		return Video{}, fmt.Errorf("video not found")
+	}
+
+	videoInfo := response.Items[0]
+	video := Video{
+		ID:                     videoID,
+		Title:                  videoInfo.Snippet.Title,
+		VideoOwnerChannelTitle: videoInfo.Snippet.ChannelTitle,
+		Thumbnail:              videoInfo.Snippet.Thumbnails.Default.Url,
+		URL:                    fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID),
+		ViewCount:              int64(videoInfo.Statistics.ViewCount),
+	}
+
+	return video, nil
 }
